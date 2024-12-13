@@ -25,7 +25,7 @@ class StoreItemController {
         return searchResponse.results
     }
     
-    func fetchImage(from url: URL) async throws -> UIImage {
+	func fetchImage(from url: URL) async throws -> UIImage {
         let (data, response) = try await URLSession.shared.data(from: url)
         
         guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {

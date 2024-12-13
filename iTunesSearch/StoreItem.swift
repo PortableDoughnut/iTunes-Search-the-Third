@@ -44,3 +44,9 @@ struct StoreItem: Codable {
 struct SearchResponse: Codable {
     let results: [StoreItem]
 }
+
+extension StoreItem: Identifiable {
+	var id: String {
+		"\(trackId ?? -1)-\(collectionId ?? -1)"
+	}
+}
