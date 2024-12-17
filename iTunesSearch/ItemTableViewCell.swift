@@ -1,7 +1,7 @@
 
 import UIKit
 
-class ItemTableViewCell: UITableViewCell {
+class ItemTableViewCell: UITableViewCell, ItemDisplaying {
     static let placeholder = UIImage(systemName: "photo")!    
     
     @IBOutlet var itemImageView: UIImageView!
