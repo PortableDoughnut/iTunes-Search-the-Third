@@ -167,7 +167,7 @@
         <scene sceneID="lYb-Pt-x9M">
             <objects>
                 <collectionViewController id="T5c-mz-q36" customClass="StoreItemCollectionViewController" customModule="iTunesSearch" customModuleProvider="target" sceneMemberID="viewController">
-                    <collectionView key="view" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" dataMode="prototypes" id="KcJ-JY-FOL">
+                    <collectionView key="view" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleAspectFit" dataMode="prototypes" id="KcJ-JY-FOL">
                         <rect key="frame" x="0.0" y="0.0" width="390" height="771"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>

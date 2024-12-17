@@ -19,23 +19,60 @@ class ItemCollectionViewCell: UICollectionViewCell {
 		
 		contentView.layer.cornerRadius = 8
 		contentView.layer.masksToBounds = true
-		contentView.layer.borderWidth = 0.5
 		contentView.layer.borderColor = UIColor.lightGray.cgColor
 		
-		layer.shadowColor = UIColor.black.cgColor
-		layer.shadowOpacity = 0.2
-		layer.shadowOffset = CGSize(width: 0, height: 2)
-		layer.shadowRadius = 4
 		layer.masksToBounds = false
 		
 		itemImageView.layer.cornerRadius = 8
 		itemImageView.clipsToBounds = true
-		itemImageView.contentMode = .scaleAspectFill
+		itemImageView.contentMode = .scaleAspectFit
+		
+		itemImageView.translatesAutoresizingMaskIntoConstraints = false
 		
 		titleLabel.font = UIFont.preferredFont(forTextStyle: .headline)
 		detailLabel.font = UIFont.preferredFont(forTextStyle: .subheadline)
 		titleLabel.textColor = .label
 		detailLabel.textColor = .secondaryLabel
+	}
+	
+	override init(frame: CGRect) {
+		super.init(frame: frame)
+		
+		itemImageView.contentMode = .scaleAspectFit
+		itemImageView.clipsToBounds = true
+		contentView.addSubview(itemImageView)
+		
+		titleLabel.textColor = .white
+		titleLabel.backgroundColor = UIColor.black.withAlphaComponent(0.5)
+		titleLabel.textAlignment = .center
+		titleLabel.font = UIFont.systemFont(ofSize: 14, weight: .medium)
+		contentView.addSubview(titleLabel)
+		
+		itemImageView.translatesAutoresizingMaskIntoConstraints = false
+		titleLabel.translatesAutoresizingMaskIntoConstraints = false
+		NSLayoutConstraint.activate([
+			itemImageView.topAnchor.constraint(equalTo: contentView.topAnchor),
+			itemImageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+			itemImageView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+			itemImageView.bottomAnchor.constraint(equalTo: titleLabel.topAnchor, constant: -4),
+			
+			titleLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -8),
+			titleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 8),
+			titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -8),
+			titleLabel.heightAnchor.constraint(equalToConstant: 20)
+		])
+		
+		titleLabel.setContentHuggingPriority(.required, for: .vertical)
+		detailLabel.setContentCompressionResistancePriority(.required, for: .vertical)
+		
+		setNeedsLayout()
+		layoutIfNeeded()
+		
+		
+	}
+	
+	required init?(coder: NSCoder) {
+		super.init(coder: coder)
 	}
 	
 	override var isHighlighted: Bool {
@@ -51,12 +88,12 @@ class ItemCollectionViewCell: UICollectionViewCell {
 			let itemSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .fractionalHeight(1.0))
 			let item = NSCollectionLayoutItem(layoutSize: itemSize)
 			
-			let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(0.45), heightDimension: .absolute(250))
+			let groupSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .fractionalHeight(1))
 			let group = NSCollectionLayoutGroup.horizontal(layoutSize: groupSize, subitems: [item])
 			group.contentInsets = NSDirectionalEdgeInsets(top: 8, leading: 8, bottom: 8, trailing: 8)
 			
 			let section = NSCollectionLayoutSection(group: group)
-			section.interGroupSpacing = 16
+			section.interGroupSpacing = 4
 			section.contentInsets = NSDirectionalEdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 16)
 			
 			return section
