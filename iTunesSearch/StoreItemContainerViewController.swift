@@ -12,7 +12,12 @@ class StoreItemContainerViewController: UIViewController, UISearchResultsUpdatin
 	var tableViewDataSource: UITableViewDiffableDataSource<String, StoreItem.ID>!
 	
 	var items = [StoreItem]()
-	let queryOptions = ["movie", "music", "software", "ebook"]
+	var selectedSearchScope: SearchScope {
+		let selectedIndex = searchController.searchBar.selectedScopeButtonIndex
+		let searchScope = SearchScope.allCases[selectedIndex]
+		
+		return searchScope
+	}
 	
 	var searchTask: Task<Void, Never>?
 	var tableViewImageLoadTasks: [IndexPath: Task<Void, Never>] = [:]
@@ -33,7 +38,7 @@ class StoreItemContainerViewController: UIViewController, UISearchResultsUpdatin
 		searchController.obscuresBackgroundDuringPresentation = false
 		searchController.automaticallyShowsSearchResultsController = true
 		searchController.searchBar.showsScopeBar = true
-		searchController.searchBar.scopeButtonTitles = ["Movies", "Music", "Apps", "Books"]
+		searchController.searchBar.scopeButtonTitles = SearchScope.allCases.map(\.title)
 	}
 	
 	func configureTableViewDataSource(_ tableView: UITableView) {
@@ -117,7 +122,6 @@ class StoreItemContainerViewController: UIViewController, UISearchResultsUpdatin
 	@objc func fetchMatchingItems() {
 		items = []
 		let searchTerm = searchController.searchBar.text ?? ""
-		let mediaType = queryOptions[searchController.searchBar.selectedScopeButtonIndex]
 		
 		searchTask?.cancel()
 		searchTask = Task { [weak self] in
@@ -131,13 +135,13 @@ class StoreItemContainerViewController: UIViewController, UISearchResultsUpdatin
 			do {
 				let query = [
 					"term": searchTerm,
-					"media": mediaType,
+					"media": selectedSearchScope.mediaType,
 					"lang": "en_us",
 					"limit": "20"
 				]
 				let items = try await self.storeItemController.fetchItems(matching: query)
 				if searchTerm == self.searchController.searchBar.text &&
-					mediaType == self.queryOptions[self.searchController.searchBar.selectedScopeButtonIndex] {
+					query["media"] == selectedSearchScope.mediaType {
 					self.items = items
 				}
 			} catch {
