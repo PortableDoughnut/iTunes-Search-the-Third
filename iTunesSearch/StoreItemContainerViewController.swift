@@ -23,12 +23,7 @@ class StoreItemContainerViewController: UIViewController, UISearchResultsUpdatin
 	var tableViewImageLoadTasks: [IndexPath: Task<Void, Never>] = [:]
 	var collectionViewImageLoadTasks: [IndexPath: Task<Void, Never>] = [:]
 	
-	var itemIdentifiersSnapshot: NSDiffableDataSourceSnapshot<String, StoreItem.ID> {
-		var snapshot = NSDiffableDataSourceSnapshot<String, StoreItem.ID>()
-		snapshot.appendSections(["Results"])
-		snapshot.appendItems(items.map { $0.id })
-		return snapshot
-	}
+	var itemIdentifiersSnapshot: NSDiffableDataSourceSnapshot<String, StoreItem.ID> = .init()
 	
 	override func viewDidLoad() {
 		super.viewDidLoad()
@@ -119,37 +114,84 @@ class StoreItemContainerViewController: UIViewController, UISearchResultsUpdatin
 		perform(#selector(fetchMatchingItems), with: nil, afterDelay: 0.3)
 	}
 	
-	@objc func fetchMatchingItems() {
-		items = []
-		let searchTerm = searchController.searchBar.text ?? ""
+	func fetchAndHandleItemsForSearchScopes(
+		_ searchScopes: [SearchScope],
+		withSearchTerm searchTerm: String
+	) async throws {
+		try await withThrowingTaskGroup(
+			of: (SearchScope, [StoreItem]).self
+		) {
+			group in
+			for searchScope in searchScopes {
+				group.addTask {
+					try Task.checkCancellation()
+					
+					let query = [
+						"term": searchTerm,
+						"media": searchScope.mediaType,
+						"lang": "en_us",
+						"limit": "50"
+					]
+					
+					return (searchScope, try await self.storeItemController.fetchItems(matching: query))
+				}
+			}
+			for try await(searchScope, items) in group {
+				try Task.checkCancellation()
+				if searchTerm == self.searchController.searchBar.text &&
+					(self.selectedSearchScope == .all || searchScope == self.selectedSearchScope) {
+					await handleFetchedItems(items)
+				}
+			}
+		}
+	}
+	
+	func handleFetchedItems(_ items: [StoreItem]) async {
+		self.items += items
+		var updatedSnapshot = NSDiffableDataSourceSnapshot<String, StoreItem.ID>()
 		
-		searchTask?.cancel()
+		updatedSnapshot.appendSections(["Results"])
+		updatedSnapshot.appendItems(items.map(\.id))
+		itemIdentifiersSnapshot = updatedSnapshot
+		
+		await tableViewDataSource.apply(itemIdentifiersSnapshot, animatingDifferences: true)
+		await collectionViewDataSource.apply(itemIdentifiersSnapshot, animatingDifferences: true)
+	}
+	
+	@objc func fetchMatchingItems() {
+		itemIdentifiersSnapshot.deleteAllItems()
+		items = []
+		
+		let searchTerm = searchController.searchBar.text ?? ""
+		let searchScopes: [SearchScope]
+		
+		if selectedSearchScope == .all {
+			searchScopes = [.movies, .music, .apps, .books]
+		} else {
+			searchScopes = [selectedSearchScope]
+		}
+		
+		searchTask?.cancel() // Cancel previous task
 		searchTask = Task { [weak self] in
 			guard let self else { return }
+			
 			if searchTerm.isEmpty {
-				await tableViewDataSource.apply(NSDiffableDataSourceSnapshot(), animatingDifferences: true)
-				await collectionViewDataSource.apply(NSDiffableDataSourceSnapshot(), animatingDifferences: true)
+				Task { @MainActor in
+					await self.tableViewDataSource.apply(NSDiffableDataSourceSnapshot(), animatingDifferences: true)
+					await self.collectionViewDataSource.apply(NSDiffableDataSourceSnapshot(), animatingDifferences: true)
+				}
 				return
 			}
 			
 			do {
-				let query = [
-					"term": searchTerm,
-					"media": selectedSearchScope.mediaType,
-					"lang": "en_us",
-					"limit": "20"
-				]
-				let items = try await self.storeItemController.fetchItems(matching: query)
-				if searchTerm == self.searchController.searchBar.text &&
-					query["media"] == selectedSearchScope.mediaType {
-					self.items = items
-				}
+				try await self.fetchAndHandleItemsForSearchScopes(searchScopes, withSearchTerm: searchTerm)
+			} catch is CancellationError {
+					// Handle cancellation gracefully
 			} catch {
 				print("Error fetching items: \(error)")
 			}
 			
-			await tableViewDataSource.apply(self.itemIdentifiersSnapshot, animatingDifferences: true)
-			await collectionViewDataSource.apply(self.itemIdentifiersSnapshot, animatingDifferences: true)
+			searchTask = nil
 		}
 	}
 	
