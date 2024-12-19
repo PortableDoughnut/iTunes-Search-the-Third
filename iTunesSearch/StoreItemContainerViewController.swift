@@ -9,7 +9,7 @@ class StoreItemContainerViewController: UIViewController, UISearchResultsUpdatin
 	let storeItemController = StoreItemController()
 	
 	var collectionViewDataSource: UICollectionViewDiffableDataSource<String, StoreItem.ID>!
-	var tableViewDataSource: UITableViewDiffableDataSource<String, StoreItem.ID>!
+	var tableViewDataSource: StoreItemTableViewDiffableDataSource!
 	
 	var items = [StoreItem]()
 	var selectedSearchScope: SearchScope {
@@ -65,7 +65,7 @@ class StoreItemContainerViewController: UIViewController, UISearchResultsUpdatin
 	}
 	
 	func configureTableViewDataSource(_ tableView: UITableView) {
-		tableViewDataSource = UITableViewDiffableDataSource(
+		tableViewDataSource = .init(
 			tableView: tableView,
 			cellProvider: { [weak self] tableView, indexPath, itemIdentifier in
 				guard let self = self,
