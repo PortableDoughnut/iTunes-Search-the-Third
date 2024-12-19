@@ -36,6 +36,34 @@ class StoreItemContainerViewController: UIViewController, UISearchResultsUpdatin
 		searchController.searchBar.scopeButtonTitles = SearchScope.allCases.map(\.title)
 	}
 	
+	func createSectionedSnapshot(from items: [StoreItem]) -> NSDiffableDataSourceSnapshot<String, StoreItem.ID> {
+		let movies: [StoreItem] = items.filter { $0.kind == "feature_movie" }
+		let music: [StoreItem] = items.filter {
+			$0.kind == "song" || $0.kind == "album"
+		}
+		let apps: [StoreItem] = items.filter { $0.kind == "software" }
+		let books: [StoreItem] = items.filter { $0.kind == "ebook" }
+		
+		let grouped: [(SearchScope, [StoreItem])] = [
+			(.movies, movies),
+			(.music, music),
+			(.apps, apps),
+			(.books, books)
+		]
+		
+		var snapshot: NSDiffableDataSourceSnapshot<String, StoreItem.ID> = .init()
+		grouped.forEach {
+			(scope, items) in
+			
+			if items.count > 0 {
+				snapshot.appendSections([scope.title])
+				snapshot.appendItems(items.map(\.id), toSection: scope.title)
+			}
+		}
+		
+		return snapshot
+	}
+	
 	func configureTableViewDataSource(_ tableView: UITableView) {
 		tableViewDataSource = UITableViewDiffableDataSource(
 			tableView: tableView,
@@ -148,11 +176,8 @@ class StoreItemContainerViewController: UIViewController, UISearchResultsUpdatin
 	
 	func handleFetchedItems(_ items: [StoreItem]) async {
 		self.items += items
-		var updatedSnapshot = NSDiffableDataSourceSnapshot<String, StoreItem.ID>()
 		
-		updatedSnapshot.appendSections(["Results"])
-		updatedSnapshot.appendItems(items.map(\.id))
-		itemIdentifiersSnapshot = updatedSnapshot
+		itemIdentifiersSnapshot = createSectionedSnapshot(from: self.items)
 		
 		await tableViewDataSource.apply(itemIdentifiersSnapshot, animatingDifferences: true)
 		await collectionViewDataSource.apply(itemIdentifiersSnapshot, animatingDifferences: true)
