@@ -23,6 +23,7 @@
 		636221302D0CA2E800BFE04E /* ItemCollectionViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6362212F2D0CA2E700BFE04E /* ItemCollectionViewCell.swift */; };
 		63717D902D0B525500D4C5A3 /* PlaceholderTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63717D8F2D0B525500D4C5A3 /* PlaceholderTableViewCell.swift */; };
 		63AD83362D1480BE00E4F4FE /* StoreItemTableViewDiffableDataSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63AD83352D1480AD00E4F4FE /* StoreItemTableViewDiffableDataSource.swift */; };
+		63AD83382D1482A200E4F4FE /* StoreItemCollectionViewSectionHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 63AD83372D14828B00E4F4FE /* StoreItemCollectionViewSectionHeader.swift */; };
 		96FA0D1F2AE0B5CC00C27EE4 /* ItemCollectionViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 96FA0D1E2AE0B5CC00C27EE4 /* ItemCollectionViewCell.xib */; };
 /* End PBXBuildFile section */
 
@@ -45,6 +46,7 @@
 		6362212F2D0CA2E700BFE04E /* ItemCollectionViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemCollectionViewCell.swift; sourceTree = "<group>"; };
 		63717D8F2D0B525500D4C5A3 /* PlaceholderTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceholderTableViewCell.swift; sourceTree = "<group>"; };
 		63AD83352D1480AD00E4F4FE /* StoreItemTableViewDiffableDataSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreItemTableViewDiffableDataSource.swift; sourceTree = "<group>"; };
+		63AD83372D14828B00E4F4FE /* StoreItemCollectionViewSectionHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreItemCollectionViewSectionHeader.swift; sourceTree = "<group>"; };
 		96FA0D1E2AE0B5CC00C27EE4 /* ItemCollectionViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = ItemCollectionViewCell.xib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -78,6 +80,7 @@
 		18A6051B23CF9802002037CA /* iTunesSearch */ = {
 			isa = PBXGroup;
 			children = (
+				63AD83372D14828B00E4F4FE /* StoreItemCollectionViewSectionHeader.swift */,
 				63AD83352D1480AD00E4F4FE /* StoreItemTableViewDiffableDataSource.swift */,
 				636166DE2D133450000C39BA /* SearchScope.swift */,
 				6345F77F2D107B8F00C48657 /* ItemDisplaying.swift */,
@@ -178,6 +181,7 @@
 				1812E9A323F36978009BBFA7 /* StoreItemCollectionViewController.swift in Sources */,
 				636166DF2D133455000C39BA /* SearchScope.swift in Sources */,
 				18A6053523CFABBB002037CA /* StoreItem.swift in Sources */,
+				63AD83382D1482A200E4F4FE /* StoreItemCollectionViewSectionHeader.swift in Sources */,
 				63AD83362D1480BE00E4F4FE /* StoreItemTableViewDiffableDataSource.swift in Sources */,
 				18A6053723CFABDC002037CA /* StoreItemController.swift in Sources */,
 				636221302D0CA2E800BFE04E /* ItemCollectionViewCell.swift in Sources */,

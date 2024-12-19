@@ -108,6 +108,21 @@ class StoreItemContainerViewController: UIViewController, UISearchResultsUpdatin
 			
 			cell.configure(for: item, storeItemController: self.storeItemController)
 			
+			let headerRegistration = UICollectionView.SupplementaryRegistration<StoreItemCollectionViewSectionHeader>(elementKind: "Header") {
+				[weak self] headerView, elementKind, indexPath in
+				
+				guard let self else { return }
+				
+				let title = itemIdentifiersSnapshot.sectionIdentifiers[indexPath.section]
+				headerView.setTitle(title)
+			}
+				
+			collectionViewDataSource.supplementaryViewProvider = {
+				collectionView, kind, indexPath -> UICollectionReusableView? in
+				
+				collectionView.dequeueConfiguredReusableSupplementary(using: headerRegistration, for: indexPath)
+			}
+			
 			if cell.itemImageView.image == ItemCollectionViewCell.placeholder {
 				self.collectionViewImageLoadTasks[indexPath]?.cancel()
 				self.collectionViewImageLoadTasks[indexPath] = Task { [weak self] in
