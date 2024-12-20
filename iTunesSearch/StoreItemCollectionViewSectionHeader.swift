@@ -12,7 +12,7 @@ class StoreItemCollectionViewSectionHeader: UICollectionReusableView {
 		let label = UILabel()
 		label.font = .systemFont(ofSize: 17, weight: .semibold)
 		label.textColor = .label
-		label.textAlignment = .left
+
 		
 		return label
 	}()
@@ -33,6 +33,8 @@ class StoreItemCollectionViewSectionHeader: UICollectionReusableView {
 	
 	private func setupView() {
 		backgroundColor = .systemGray5
+		
+		addSubview(titleLabel)
 		titleLabel.translatesAutoresizingMaskIntoConstraints = false
 		
 		NSLayoutConstraint.activate([

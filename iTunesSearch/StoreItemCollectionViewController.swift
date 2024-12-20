@@ -2,37 +2,45 @@
 import UIKit
 
 class StoreItemCollectionViewController: UICollectionViewController {
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-		let itemSize: NSCollectionLayoutSize = .init(
-			widthDimension: .fractionalWidth(0.3),
+	func configureCollectionViewLayout(for searchScope: SearchScope) {
+		let itemSize = NSCollectionLayoutSize(
+			widthDimension: .fractionalWidth(1/3),
 			heightDimension: .fractionalHeight(1)
 		)
-		let item: NSCollectionLayoutItem = .init(layoutSize: itemSize)
-		
-		let groupSize: NSCollectionLayoutSize = .init(
-			widthDimension: .fractionalWidth(1),
-			heightDimension: .fractionalHeight(0.5)
+		let item = NSCollectionLayoutItem(layoutSize: itemSize)
+		item.contentInsets = .init(
+			top: 8,
+			leading: 5,
+			bottom: 8,
+			trailing: 5
 		)
-		let group: NSCollectionLayoutGroup = .horizontal(
+		
+		let groupSize = NSCollectionLayoutSize(
+			widthDimension: searchScope.groupWidthDimenstion,
+			heightDimension: .absolute(166)
+		)
+		let group = NSCollectionLayoutGroup.horizontal(
 			layoutSize: groupSize,
 			subitem: item,
-			count: 3
+			count: 1
 		)
 		
-		let section: NSCollectionLayoutSection = .init(group: group)
-		section.contentInsets = NSDirectionalEdgeInsets(
-			top: 8,
-			leading: 8,
-			bottom: 8,
-			trailing: 8
-		)
-		section.interGroupSpacing = 8
+		let section = NSCollectionLayoutSection(group: group)
+		section.orthogonalScrollingBehavior = searchScope.orthogonalScrollingBehavior
 		
-		collectionView.collectionViewLayout = UICollectionViewCompositionalLayout(section: section)
-    }
-    
-	
+		let headerSize = NSCollectionLayoutSize(
+			widthDimension: .fractionalWidth(1),
+			heightDimension: .absolute(28)
+		)
+		let headerItem = NSCollectionLayoutBoundarySupplementaryItem(
+			layoutSize: headerSize,
+			elementKind: "Header",
+			alignment: .topLeading
+			)
+		
+		section.boundarySupplementaryItems = [headerItem]
+		
+		let layout = UICollectionViewCompositionalLayout(section: section)
+		collectionView.collectionViewLayout = layout
+	}
 }

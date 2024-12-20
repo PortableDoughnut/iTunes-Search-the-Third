@@ -47,6 +47,6 @@ struct SearchResponse: Codable {
 
 extension StoreItem: Identifiable {
 	var id: String {
-		"\(trackId ?? -1)-\(collectionId ?? -1)"
+		UUID().uuidString
 	}
 }

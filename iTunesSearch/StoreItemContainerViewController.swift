@@ -1,3 +1,15 @@
+/*
+ 
+/\
+/  \
+(oo)
+/------\/
+/|      |
+* ||----||
+^^    ^^
+ 
+*/
+
 import UIKit
 
 @MainActor
@@ -8,6 +20,7 @@ class StoreItemContainerViewController: UIViewController, UISearchResultsUpdatin
 	let searchController = UISearchController()
 	let storeItemController = StoreItemController()
 	
+	weak var collectionViewController: StoreItemCollectionViewController?
 	var collectionViewDataSource: UICollectionViewDiffableDataSource<String, StoreItem.ID>!
 	var tableViewDataSource: StoreItemTableViewDiffableDataSource!
 	
@@ -37,7 +50,7 @@ class StoreItemContainerViewController: UIViewController, UISearchResultsUpdatin
 	}
 	
 	func createSectionedSnapshot(from items: [StoreItem]) -> NSDiffableDataSourceSnapshot<String, StoreItem.ID> {
-		let movies: [StoreItem] = items.filter { $0.kind == "feature_movie" }
+		let movies: [StoreItem] = items.filter { $0.kind == "feature-movie" }
 		let music: [StoreItem] = items.filter {
 			$0.kind == "song" || $0.kind == "album"
 		}
@@ -51,7 +64,7 @@ class StoreItemContainerViewController: UIViewController, UISearchResultsUpdatin
 			(.books, books)
 		]
 		
-		var snapshot: NSDiffableDataSourceSnapshot<String, StoreItem.ID> = .init()
+		var snapshot = NSDiffableDataSourceSnapshot<String, StoreItem.ID>()
 		grouped.forEach {
 			(scope, items) in
 			
@@ -98,7 +111,7 @@ class StoreItemContainerViewController: UIViewController, UISearchResultsUpdatin
 	}
 	
 	func configureCollectionViewDataSource(_ collectionView: UICollectionView) {
-		let nib: UINib = UINib(nibName: "ItemCollectionViewCell", bundle: .main)
+		let nib: UINib = UINib(nibName: "ItemCollectionViewCell", bundle: Bundle(for: ItemCollectionViewCell.self))
 		let cellRegistration = UICollectionView.CellRegistration<ItemCollectionViewCell, StoreItem.ID>(
 			cellNib: nib
 		) { [weak self] cell, indexPath, itemIdentifier in
@@ -107,21 +120,6 @@ class StoreItemContainerViewController: UIViewController, UISearchResultsUpdatin
 			else { return }
 			
 			cell.configure(for: item, storeItemController: self.storeItemController)
-			
-			let headerRegistration = UICollectionView.SupplementaryRegistration<StoreItemCollectionViewSectionHeader>(elementKind: "Header") {
-				[weak self] headerView, elementKind, indexPath in
-				
-				guard let self else { return }
-				
-				let title = itemIdentifiersSnapshot.sectionIdentifiers[indexPath.section]
-				headerView.setTitle(title)
-			}
-				
-			collectionViewDataSource.supplementaryViewProvider = {
-				collectionView, kind, indexPath -> UICollectionReusableView? in
-				
-				collectionView.dequeueConfiguredReusableSupplementary(using: headerRegistration, for: indexPath)
-			}
 			
 			if cell.itemImageView.image == ItemCollectionViewCell.placeholder {
 				self.collectionViewImageLoadTasks[indexPath]?.cancel()
@@ -140,11 +138,26 @@ class StoreItemContainerViewController: UIViewController, UISearchResultsUpdatin
 			}
 		}
 		
+		
+		
 		collectionViewDataSource = UICollectionViewDiffableDataSource<String, StoreItem.ID>(
 			collectionView: collectionView,
 			cellProvider: { collectionView, indexPath, identifier in
 				collectionView.dequeueConfiguredReusableCell(using: cellRegistration, for: indexPath, item: identifier)
 			})
+		
+		let headerRegistration = UICollectionView.SupplementaryRegistration<StoreItemCollectionViewSectionHeader>(
+			elementKind: "Header"
+		) { [weak self] headerView, elementKind, indexPath in
+			guard let self else { return }
+			let title = itemIdentifiersSnapshot.sectionIdentifiers[indexPath.section]
+			headerView.setTitle(title)
+		}
+		
+		collectionViewDataSource.supplementaryViewProvider = {
+			collectionView, kind, indexPath -> UICollectionReusableView? in
+			return collectionView.dequeueConfiguredReusableSupplementary(using: headerRegistration, for: indexPath)
+		}
 	}
 	
 	@IBAction func switchContainerView(_ sender: UISegmentedControl) {
@@ -194,6 +207,8 @@ class StoreItemContainerViewController: UIViewController, UISearchResultsUpdatin
 		
 		itemIdentifiersSnapshot = createSectionedSnapshot(from: self.items)
 		
+		collectionViewController?.configureCollectionViewLayout(for: selectedSearchScope)
+		
 		await tableViewDataSource.apply(itemIdentifiersSnapshot, animatingDifferences: true)
 		await collectionViewDataSource.apply(itemIdentifiersSnapshot, animatingDifferences: true)
 	}
@@ -211,7 +226,7 @@ class StoreItemContainerViewController: UIViewController, UISearchResultsUpdatin
 			searchScopes = [selectedSearchScope]
 		}
 		
-		searchTask?.cancel() // Cancel previous task
+		searchTask?.cancel()
 		searchTask = Task { [weak self] in
 			guard let self else { return }
 			
@@ -225,8 +240,6 @@ class StoreItemContainerViewController: UIViewController, UISearchResultsUpdatin
 			
 			do {
 				try await self.fetchAndHandleItemsForSearchScopes(searchScopes, withSearchTerm: searchTerm)
-			} catch is CancellationError {
-					// Handle cancellation gracefully
 			} catch {
 				print("Error fetching items: \(error)")
 			}
@@ -239,7 +252,39 @@ class StoreItemContainerViewController: UIViewController, UISearchResultsUpdatin
 		if let tableViewController = segue.destination as? StoreItemListTableViewController {
 			configureTableViewDataSource(tableViewController.tableView)
 		} else if let collectionViewController = segue.destination as? StoreItemCollectionViewController {
+			collectionViewController.configureCollectionViewLayout(for: selectedSearchScope)
 			configureCollectionViewDataSource(collectionViewController.collectionView)
+			
+			self.collectionViewController = collectionViewController
+		}
+	}
+}
+
+extension SearchScope {
+	var orthogonalScrollingBehavior: UICollectionLayoutSectionOrthogonalScrollingBehavior {
+		switch self {
+			case .all:
+				return .continuousGroupLeadingBoundary
+			default:
+				return .none
+		}
+	}
+	
+	var groupItemCount: Int {
+		switch self {
+			case .all:
+				return 1
+			default:
+				return 3
+		}
+	}
+	
+	var groupWidthDimenstion: NSCollectionLayoutDimension {
+		switch self {
+			case .all:
+				return .fractionalWidth(1/3)
+			default:
+				return .fractionalWidth(1)
 		}
 	}
 }
